@@ -193,7 +193,6 @@ All service logs are streamed to CloudWatch for observability.
 This repository includes a GitHub Actions workflow defined in `.github/workflows/terraform.yml`. This CI pipeline is triggered on every `push` and `pull_request` to the `main` branch and performs the following checks:
 - `terraform fmt -check`: Ensures all Terraform code is correctly formatted.
 - `terraform validate`: Checks the syntax and configuration of the Terraform files.
-- `terraform plan`: Generates an execution plan to preview changes without applying them.
 
 ## Cleanup
 
