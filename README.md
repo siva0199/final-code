@@ -9,9 +9,10 @@ This project demonstrates a small, production-ready infrastructure on AWS, provi
 - [Prerequisites](#prerequisites)
 - [Deployment Instructions](#deployment-instructions)
 - [Testing and Verification (Proof of Deployment)](#testing-and-verification-proof-of-deployment)
-- [Security Considerations](#security-considerations)
 - [CI/CD Pipeline](#cicd-pipeline)
+- [Security Considerations](#security-considerations)
 - [Cleanup](#cleanup)
+- [Appendix: Detailed Screenshots](#appendix-detailed-screenshots)
 
 ## Architecture Overview
 
@@ -103,19 +104,16 @@ graph TD
     ```
 
 3.  **Initialize Terraform**:
-    This command downloads the necessary provider plugins and initializes the backend.
     ```
     terraform init
     ```
 
 4.  **Review the Execution Plan**:
-    This dry-run command shows what resources Terraform will create.
     ```
     terraform plan
     ```
 
 5.  **Apply the Configuration**:
-    This command builds and deploys all the resources. You will be prompted to confirm.
     ```
     terraform apply
     ```
@@ -123,154 +121,122 @@ graph TD
 
 ## Testing and Verification (Proof of Deployment)
 
+This section provides direct proof that all components of the infrastructure are deployed and functioning correctly.
+
 ### 1. Test ALB Round-Robin Routing
 
-The ALB is configured to distribute traffic evenly between `nginx-a` and `nginx-b`. The `curl` loop below demonstrates this behavior.
+The ALB evenly distributes traffic between the `nginx-a` and `nginx-b` services. A `curl` loop confirms this behavior.
 
 **Command:**
 ```
 ALB_DNS=$(terraform output -raw alb_dns_name)
-for i in {1..10}; do curl -s http://${ALB_DNS}/ | grep -o 'Nginx Service [A-B]'; sleep 1; done
+for i in {1..10}; do curl -s http://${ALB_DNS}/ | grep -o 'Nginx Service [A-B]'; done
 ```
 
-**Output Snippet:**
-```
-Nginx Service B
-Nginx Service A
-Nginx Service B
-Nginx Service A
-Nginx Service A
-...
-```
+**Terminal Output:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE TERMINAL OUTPUT (e.g., terminal-result.png) -->
+![Round Robin Test](screenshots/terminal-result.png)
 
 ### 2. Test File Upload API
 
-Create a sample file and `POST` it to the `/upload` endpoint.
+A file is sent to the `POST /upload` endpoint. The API Gateway routes the request to the Lambda function, which successfully stores the file in the private S3 bucket.
 
 **Command:**
 ```
 API_ENDPOINT=$(terraform output -raw api_gateway_endpoint)
-echo "This is a test file for the S3 upload." > sample.txt
-curl -X POST --data-binary "@sample.txt" -H "Content-Type: text/plain" "${API_ENDPOINT}/upload"
+# Note: We use the 'prod' stage in the URL
+FULL_API_URL="${API_ENDPOINT}/prod/upload"
+echo "This is a successful test upload." > sample.txt
+curl -X POST --data-binary "@sample.txt" -H "Content-Type: text/plain" "${FULL_API_URL}"
 ```
-**Output Snippet:**
-```
-{"message":"File uploaded successfully!","bucket":"iac-demo-uploads-xxxxxxxx","key":"uploads/2025-09-20-XX-XX-XX-sample.txt"}
-```
+
+**Proof of Successful Upload:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE SUCCESSFUL CURL COMMAND (e.g., uploaded-file-result.png) -->
+![Upload Success](screenshots/uploaded-file-result.png)
 
 ### 3. Verify File in S3 Bucket
 
-The uploaded file can be viewed in the S3 bucket via the AWS Management Console.
+The uploaded file is now visible in the S3 bucket via the AWS Console.
 
-**Screenshot of S3 Bucket:**
-
-<!-- YOUR SCREENSHOT OF THE S3 BUCKET CONTENTS GOES HERE -->
-<!-- Example: ![S3 Upload Verification](https://user-images.githubusercontent.com/xxxx/xxxx-xxxx.png) -->
-
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE FILE IN THE S3 BUCKET (e.g., s3-bucket-object.png) -->
+![File in S3](screenshots/s3-bucket-object.png)
 
 ### 4. Verify Logs in CloudWatch
 
-All service logs are streamed to CloudWatch for observability.
+All service logs are successfully streamed to CloudWatch for observability.
 
-**Screenshot of ECS `nginx-a` Log Group:**
+**ECS Nginx Log Group:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE ECS LOGS (e.g., nginx-a-loggroup.png) -->
+![ECS Logs](screenshots/nginx-a-loggroup.png)
 
-<!-- YOUR SCREENSHOT OF THE ECS LOGS GOES HERE -->
-
-
-**Screenshot of Lambda `upload-handler` Log Group:**
-
-<!-- YOUR SCREENSHOT OF THE LAMBDA LOGS GOES HERE -->
-
-
-## Security Considerations
-
-- **IAM Least Privilege**: Each component (ECS Task, EC2 Instance, Lambda) has a dedicated IAM role with the minimum required permissions. For example, the Lambda function can only perform `s3:PutObject` on the specific target bucket.
-- **Network Segmentation**: Security Groups are used to control traffic flow. The ECS instances only accept traffic from the ALB, and the ALB only accepts public HTTP traffic.
-- **No Hardcoded Secrets**: The architecture avoids hardcoded secrets. The GitHub Actions workflow assumes that AWS credentials are provided securely via repository secrets.
+**Lambda Log Group:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE LAMBDA LOGS (e.g., lambda-loggroup.png) -->
+![Lambda Logs](screenshots/lambda-loggroup.png)
 
 ## CI/CD Pipeline
 
-This repository includes a GitHub Actions workflow defined in `.github/workflows/terraform.yml`. This CI pipeline is triggered on every `push` and `pull_request` to the `main` branch and performs the following checks:
-- `terraform fmt -check`: Ensures all Terraform code is correctly formatted.
-- `terraform validate`: Checks the syntax and configuration of the Terraform files.
+This repository includes a GitHub Actions workflow (`.github/workflows/terraform.yml`) that runs on every `push` and `pull_request`. It ensures code quality and validates the configuration by performing:
+- `terraform fmt -check`
+- `terraform validate`
+- `terraform plan`
+
+**Successful GitHub Actions Workflow Run:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE PASSING GITHUB ACTIONS WORKFLOW (e.g., github-actions.png) -->
+![GitHub Actions](screenshots/github-actions.png)
+
+## Security Considerations
+
+- **IAM Least Privilege**: Each component (ECS Task, EC2 Instance, Lambda) has a dedicated IAM role with the minimum required permissions.
+- **Network Segmentation**: Security Groups control traffic flow, ensuring the ECS instances only accept traffic from the ALB, and the ALB only accepts public HTTP traffic.
+- **No Hardcoded Secrets**: The architecture avoids hardcoded secrets. The GitHub Actions workflow assumes AWS credentials are provided via repository secrets.
 
 ## Cleanup
 
-To avoid ongoing charges, destroy all the resources created by this project by running the following command from the `environments/demo` directory:
-
+To destroy all deployed resources and avoid ongoing AWS charges, run the following command from the `environments/demo` directory:
 ```
 terraform destroy
 ```
-You will be prompted to confirm the deletion of all resources.
-```
 
+## Appendix: Detailed Screenshots
 
-# Project Screenshots
+This section contains a comprehensive collection of screenshots for every component of the deployed infrastructure.
 
-### API Gateway
-![API Gateway](screenshots/apigateway.png)
-
-### CloudWatch Logs
-![CloudWatch Logs](screenshots/cloudwatch-loggroups.png)
-
-### ECS Cluster
-![ECS Cluster](screenshots/ecs-cluster.png)
-![ECS Cluster Info](screenshots/ecs-cluster-info.png)
-
-### ECS Cluster Services
-![Cluster Service Nginx A](screenshots/cluster-service-nginx-a.png)
-![Cluster Service Nginx B](screenshots/cluster-service-nginx-b.png)
-
-### Instances
-![Instances](screenshots/instances.png)
-
-### Lambda Logs
-![Lambda Log Group](screenshots/lambda-loggroup.png)
-
-### Load Balancer
-![Load Balancer](screenshots/loadbalancer.png)
-![Load Balancer Info](screenshots/loadbalancer-info.png)
-
-### Nginx Logs
-![Nginx A Log Group](screenshots/nginx-a-loggroup.png)
-![Nginx B Log Group](screenshots/nginx-b-loggroup.png)
-
-### S3 Buckets
-![S3 Bucket](screenshots/s3-bucket.png)
-![S3 Bucket Objects](screenshots/s3-bucket-object.png)
-
-### Security Groups
-![Security Groups](screenshots/security-groups.png)
-
-### Target Groups
-![Target Group Nginx A](screenshots/target-group-nginx-a.png)
-![Target Group Nginx B](screenshots/target-group-nginx-b.png)
-![Target Groups](screenshots/target-groups.png)
+<details>
+<summary><b>Click to expand/collapse all infrastructure screenshots</b></summary>
 
 ### Terraform Commands
-![Terraform Init](screenshots/terraform-init.png)
-![Terraform Plan](screenshots/terraform-plan.png)
-![Terraform Plan Result](screenshots/terraform-plan-result.png)
-![Terraform Apply](screenshots/terraform-apply.png)
-![Terraform Apply Result](screenshots/terraform-apply-result.png)
+- ![Terraform Init](screenshots/terraform-init.png)
+- ![Terraform Plan](screenshots/terraform-plan.png)
+- ![Terraform Apply](screenshots/terraform-apply.png)
+- ![Terraform Apply Result](screenshots/terraform-apply-result.png)
 
-### Upload Test
-![Uploaded File](screenshots/uploaded-file.png)
-![Uploaded File Result](screenshots/uploaded-file-result.png)
+### Networking (VPC & Security Groups)
+- ![VPC Components](screenshots/vpc-components.png)
+- ![Security Groups](screenshots/security-groups.png)
 
-### VPC
-![VPC Components](screenshots/vpc-components.png)
+### Application Load Balancer (ALB)
+- ![Load Balancer](screenshots/loadbalancer.png)
+- ![Load Balancer Info](screenshots/loadbalancer-info.png)
+- ![Target Groups](screenshots/target-groups.png)
+- ![Target Group Nginx A](screenshots/target-group-nginx-a.png)
+- ![Target Group Nginx B](screenshots/target-group-nginx-b.png)
 
-### GitHub Actions
-![GitHub Actions](screenshots/github-actions.png)
-![GitHub Actions Workflow](screenshots/github-actions-workflow.png)
+### ECS Cluster & Services
+- ![ECS Cluster](screenshots/ecs-cluster.png)
+- ![ECS Cluster Info](screenshots/ecs-cluster-info.png)
+- ![Cluster Service Nginx A](screenshots/cluster-service-nginx-a.png)
+- ![Cluster Service Nginx B](screenshots/cluster-service-nginx-b.png)
+- ![Instances](screenshots/instances.png)
+
+### API Gateway & Lambda
+- ![API Gateway](screenshots/apigateway.png)
 
 ### IAM Roles
-![IAM Roles](screenshots/iam-roles.png)
+- ![IAM Roles](screenshots/iam-roles.png)
 
-### Terminal Output
-![Terminal Result](screenshots/terminal-result.png)
+### Final Result
+- ![End Result](screenshots/end-result.png)
+- ![End Result 2](screenshots/end-result2.png)
 
-### End Results
-![End Result](screenshots/end-result.png)
-![End Result 2](screenshots/end-result2.png)
+</details>
+```
