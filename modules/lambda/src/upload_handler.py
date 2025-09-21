@@ -12,10 +12,13 @@ def lambda_handler(event, context):
         if BUCKET_NAME is None:
             raise ValueError("UPLOAD_BUCKET_NAME environment variable not set.")
 
-        # API Gateway HTTP API sends the body as a base64 encoded string
-        # when the content type is not application/json
-        file_content = base64.b64decode(event['body'])
-        
+        # Determine if body is base64 encoded
+        body = event.get('body', '')
+        if event.get('isBase64Encoded', False):
+            file_content = base64.b64decode(body)
+        else:
+            file_content = body.encode('utf-8')  # convert string to bytes for S3
+
         # Extract filename from headers if available, otherwise generate one
         headers = event.get('headers', {})
         content_disposition = headers.get('content-disposition')
@@ -25,10 +28,11 @@ def lambda_handler(event, context):
             for part in parts:
                 if 'filename=' in part:
                     filename = part.split('=')[1].strip('"')
-        
+
         timestamp = datetime.utcnow().strftime('%Y-%m-%d-%H-%M-%S')
         s3_key = f"uploads/{timestamp}-{filename}"
 
+        # Upload to S3
         s3_client.put_object(
             Bucket=BUCKET_NAME,
             Key=s3_key,

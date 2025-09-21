@@ -9,11 +9,9 @@ module "vpc" {
   num_azs             = var.num_azs
 }
 
-module "lambda" {
-  source                    = "../../modules/lambda"
-  project_name              = var.project_name
-  lambda_execution_role_arn = module.iam.lambda_execution_role_arn
-  s3_bucket_name            = "${var.project_name}-uploads-${random_string.suffix.result}"
+# The S3 bucket is now created here in the root module
+resource "aws_s3_bucket" "upload_bucket" {
+  bucket = "${var.project_name}-uploads-${random_string.suffix.result}"
 }
 
 resource "random_string" "suffix" {
@@ -22,10 +20,19 @@ resource "random_string" "suffix" {
   upper   = false
 }
 
+# The IAM module now receives the bucket ARN from the resource above
 module "iam" {
   source        = "../../modules/iam"
   project_name  = var.project_name
-  s3_bucket_arn = module.lambda.s3_bucket_arn
+  s3_bucket_arn = aws_s3_bucket.upload_bucket.arn
+}
+
+# The Lambda module now receives the bucket NAME from the resource above
+module "lambda" {
+  source                    = "../../modules/lambda"
+  project_name              = var.project_name
+  lambda_execution_role_arn = module.iam.lambda_execution_role_arn
+  s3_bucket_name            = aws_s3_bucket.upload_bucket.id
 }
 
 module "alb" {
@@ -59,8 +66,9 @@ output "api_gateway_endpoint" {
   value       = module.lambda.api_endpoint
 }
 
+# This output now correctly references the bucket created in this file
 output "s3_upload_bucket_name" {
   description = "The name of the S3 bucket for uploads."
-  value       = module.lambda.s3_bucket_id
+  value       = aws_s3_bucket.upload_bucket.id
 }
 

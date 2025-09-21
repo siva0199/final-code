@@ -4,41 +4,6 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/upload_handler.zip"
 }
 
-resource "aws_s3_bucket" "upload_bucket" {
-  bucket = var.s3_bucket_name
-
-  tags = {
-    Name = "${var.project_name}-uploads"
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "block" {
-  bucket = aws_s3_bucket.upload_bucket.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-resource "aws_s3_bucket_lifecycle_configuration" "lifecycle_rule" {
-  bucket = aws_s3_bucket.upload_bucket.id
-
-  rule {
-    id     = "standard-ia-30days"
-    status = "Enabled"
-
-    transition {
-      days          = 30
-      storage_class = "STANDARD_IA"
-    }
-
-    expiration {
-      days = 365
-    }
-  }
-}
-
 resource "aws_lambda_function" "upload_handler" {
   function_name    = "${var.project_name}-upload-handler"
   filename         = data.archive_file.lambda_zip.output_path
@@ -49,7 +14,7 @@ resource "aws_lambda_function" "upload_handler" {
 
   environment {
     variables = {
-      UPLOAD_BUCKET_NAME = aws_s3_bucket.upload_bucket.id
+      UPLOAD_BUCKET_NAME = var.s3_bucket_name
     }
   }
 
@@ -77,12 +42,32 @@ resource "aws_apigatewayv2_route" "upload_route" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
+resource "aws_apigatewayv2_deployment" "main" {
+  api_id = aws_apigatewayv2_api.http_api.id
+
+  triggers = {
+    redeployment = sha1(join(",", tolist([
+      jsonencode(aws_apigatewayv2_integration.lambda_integration),
+      jsonencode(aws_apigatewayv2_route.upload_route),
+    ])))
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_apigatewayv2_stage" "default" {
+  api_id        = aws_apigatewayv2_api.http_api.id
+  name          = "$default"
+  auto_deploy   = true
+}
+
 resource "aws_lambda_permission" "api_gateway_permission" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.upload_handler.function_name
   principal     = "apigateway.amazonaws.com"
-
   source_arn = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
 }
 
