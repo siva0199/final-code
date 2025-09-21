@@ -134,6 +134,7 @@ for i in {1..10}; do curl -s http://${ALB_DNS}/ | grep -o 'Nginx Service [A-B]';
 ```
 
 **Terminal Output:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE TERMINAL OUTPUT (e.g., terminal-result.png) -->
 ![Round Robin Test](screenshots/terminal-result.png)
 
 ### 2. Test File Upload API
@@ -150,12 +151,14 @@ curl -X POST --data-binary "@sample.txt" -H "Content-Type: text/plain" "${FULL_A
 ```
 
 **Proof of Successful Upload:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE SUCCESSFUL CURL COMMAND (e.g., uploaded-file-result.png) -->
 ![Upload Success](screenshots/uploaded-file-result.png)
 
 ### 3. Verify File in S3 Bucket
 
 The uploaded file is now visible in the S3 bucket via the AWS Console.
 
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE FILE IN THE S3 BUCKET (e.g., s3-bucket-object.png) -->
 ![File in S3](screenshots/s3-bucket-object.png)
 
 ### 4. Verify Logs in CloudWatch
@@ -163,9 +166,11 @@ The uploaded file is now visible in the S3 bucket via the AWS Console.
 All service logs are successfully streamed to CloudWatch for observability.
 
 **ECS Nginx Log Group:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE ECS LOGS (e.g., nginx-a-loggroup.png) -->
 ![ECS Logs](screenshots/nginx-a-loggroup.png)
 
 **Lambda Log Group:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE LAMBDA LOGS (e.g., lambda-loggroup.png) -->
 ![Lambda Logs](screenshots/lambda-loggroup.png)
 
 ## CI/CD Pipeline
@@ -176,6 +181,7 @@ This repository includes a GitHub Actions workflow (`.github/workflows/terraform
 - `terraform plan`
 
 **Successful GitHub Actions Workflow Run:**
+<!-- REPLACE THIS WITH YOUR SCREENSHOT OF THE PASSING GITHUB ACTIONS WORKFLOW (e.g., github-actions.png) -->
 ![GitHub Actions](screenshots/github-actions.png)
 
 ## Security Considerations
