@@ -203,3 +203,74 @@ terraform destroy
 ```
 You will be prompted to confirm the deletion of all resources.
 ```
+
+
+# Project Screenshots
+
+### API Gateway
+![API Gateway](screenshots/apigateway.png)
+
+### CloudWatch Logs
+![CloudWatch Logs](screenshots/cloudwatch-loggroups.png)
+
+### ECS Cluster
+![ECS Cluster](screenshots/ecs-cluster.png)
+![ECS Cluster Info](screenshots/ecs-cluster-info.png)
+
+### ECS Cluster Services
+![Cluster Service Nginx A](screenshots/cluster-service-nginx-a.png)
+![Cluster Service Nginx B](screenshots/cluster-service-nginx-b.png)
+
+### Instances
+![Instances](screenshots/instances.png)
+
+### Lambda Logs
+![Lambda Log Group](screenshots/lambda-loggroup.png)
+
+### Load Balancer
+![Load Balancer](screenshots/loadbalancer.png)
+![Load Balancer Info](screenshots/loadbalancer-info.png)
+
+### Nginx Logs
+![Nginx A Log Group](screenshots/nginx-a-loggroup.png)
+![Nginx B Log Group](screenshots/nginx-b-loggroup.png)
+
+### S3 Buckets
+![S3 Bucket](screenshots/s3-bucket.png)
+![S3 Bucket Objects](screenshots/s3-bucket-object.png)
+
+### Security Groups
+![Security Groups](screenshots/security-groups.png)
+
+### Target Groups
+![Target Group Nginx A](screenshots/target-group-nginx-a.png)
+![Target Group Nginx B](screenshots/target-group-nginx-b.png)
+![Target Groups](screenshots/target-groups.png)
+
+### Terraform Commands
+![Terraform Init](screenshots/terraform-init.png)
+![Terraform Plan](screenshots/terraform-plan.png)
+![Terraform Plan Result](screenshots/terraform-plan-result.png)
+![Terraform Apply](screenshots/terraform-apply.png)
+![Terraform Apply Result](screenshots/terraform-apply-result.png)
+
+### Upload Test
+![Uploaded File](screenshots/uploaded-file.png)
+![Uploaded File Result](screenshots/uploaded-file-result.png)
+
+### VPC
+![VPC Components](screenshots/vpc-components.png)
+
+### GitHub Actions
+![GitHub Actions](screenshots/github-actions.png)
+![GitHub Actions Workflow](screenshots/github-actions-workflow.png)
+
+### IAM Roles
+![IAM Roles](screenshots/iam-roles.png)
+
+### Terminal Output
+![Terminal Result](screenshots/terminal-result.png)
+
+### End Results
+![End Result](screenshots/end-result.png)
+![End Result 2](screenshots/end-result2.png)
