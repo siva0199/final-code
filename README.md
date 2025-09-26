@@ -144,8 +144,7 @@ A file is sent to the `POST /upload` endpoint. The API Gateway routes the reques
 **Command:**
 ```
 API_ENDPOINT=$(terraform output -raw api_gateway_endpoint)
-# Note: We use the 'prod' stage in the URL
-FULL_API_URL="${API_ENDPOINT}/prod/upload"
+FULL_API_URL="${API_ENDPOINT}/upload"
 echo "This is a successful test upload." > sample.txt
 curl -X POST --data-binary "@sample.txt" -H "Content-Type: text/plain" "${FULL_API_URL}"
 ```
